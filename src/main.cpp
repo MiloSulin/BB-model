@@ -4,21 +4,19 @@
 #include <iostream>
 #include <vector>
 #include <array>
-#include <thread>
 #include <chrono>
-#include "NetworkComponents.hpp"
-#include "Generator.hpp"
+#include <cmath>
 #include "Network.hpp"
 
 using namespace std::chrono;
 using std::unordered_map, std::unordered_set, std::vector, std::array, std::cout;
 
 
-int main(){
+int main() {
     string type = "BEC";
     Network test = Network(type);
-    cout << "OK main\n";
     test.printVertices();
+    test.initWeightDistribution();
 
     return 0;
 }
