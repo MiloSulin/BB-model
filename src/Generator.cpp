@@ -62,7 +62,7 @@ double chooseFitness(vector<fitnessProb>* distribution) {
 WeightLeaf::WeightLeaf(int n, double w) : name{n}, weight{w} {};
 
 
-WeightBranch::WeightBranch(int range_name) : is_level_one{false}, is_root{false}, range_moniker{range_name}, total_weight{} {};
+WeightBranch::WeightBranch(int range_name) : is_level_one{false}, is_root{false}, range_moniker{range_name}, total_weight{}, leafs{}, branches{} {};
 
 WeightBranch::~WeightBranch() {for (auto& e : leafs) {delete e;}}
 

@@ -23,7 +23,8 @@ class Network {
         void printVertices();
         void initWeightDistribution();
         void constructLevel(int, unordered_set<WeightBranch*>*);
-
+        void checkWeights();
+        void checkLevels();
     private:
         vector<fitnessProb> fitness_distribution;
         bool uniform_distr;

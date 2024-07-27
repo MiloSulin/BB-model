@@ -66,10 +66,11 @@ void Network::constructLevel(int level, unordered_set<WeightBranch*>* lower_rang
     unordered_set<WeightBranch*> higher_ranges;
     bool more_than_one{false};
     for (auto& range : *lower_ranges) {
-        if(range->getSize() != 1) {
+        if(range->getSize() > 1) {
             int range_of_weight = std::floor( std::log2(range->getWeight()) ) +1;
             auto ptr_new_range = findRange(range_of_weight, level+1, &level_table);
             ptr_new_range->insertElement(range);
+            higher_ranges.insert(ptr_new_range);
             if (!more_than_one) {more_than_one = true;}
         }else {
             range->toggleRoot();
@@ -100,4 +101,22 @@ void Network::initWeightDistribution() {
         changed_ranges.insert(ptr_to_range);
     }
     constructLevel(1, &changed_ranges);
+}
+
+void Network::checkWeights() {
+    cout << "Total weight of network: " << total_weight << '\n';
+    cout << "Weights on tables:\n";
+    for (auto& e : weight_distribution){
+        cout << e.first << ": " << e.second->total_weight << '\n';
+    }
+}
+
+void Network::checkLevels() {
+    for (const auto& e : level_table){
+        cout << "Level: " << e.first << '\n';
+        for (const auto& el : e.second){
+            cout << "Range: " << el->getRange() << " Weight: " << el->getWeight() << " Children: " << el->getSize() << '\n';
+        }
+        cout << '\n';
+    }
 }

@@ -17,6 +17,8 @@ int main() {
     Network test = Network(type);
     test.printVertices();
     test.initWeightDistribution();
+    test.checkWeights();
+    test.checkLevels();
 
     return 0;
 }
