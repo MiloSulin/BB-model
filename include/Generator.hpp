@@ -3,12 +3,13 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
 #include <vector>
 #include <array>
 #include <cmath>
 #include <random>
 
-using std::unordered_map, std::unordered_set, std::vector, std::array;
+using std::unordered_map, std::unordered_set, std::vector, std::array, std::set;
 
 extern std::random_device rd;
 extern std::mt19937 gen;
@@ -43,6 +44,7 @@ struct WeightLeaf {
     long double weight; // weight of the vertex, in the case of Bianconi-Barabasi model this is fitness multiplied by degree
 };
 
+
 class WeightBranch {
     public:
         WeightBranch(int);
@@ -66,6 +68,9 @@ class WeightBranch {
         WeightLeaf* recurRejection();
         int getSize();
     private:
+        WeightLeaf* isLevelOne();
+        WeightLeaf* isNotLvlOne();
+        long double getMaxWeight();
         void setWeightOld();
         bool is_level_one;
         bool is_root;
@@ -75,7 +80,7 @@ class WeightBranch {
         int old_weight_range; // integer value x that denotes the range [2^(x-1), 2^x) this branch belonged to before changes took place
         long double total_weight; // total weight of this branch
         long double old_weight;
-        unordered_set<WeightLeaf*> leafs; // if the branch is level one it will contain a set of leaves (level 0 nodes)
+        vector<WeightLeaf*> leafs; // if the branch is level one it will contain a set of leaves (level 0 nodes)
         unordered_map<int, WeightBranch*> branches; // if the branch is not level one it will split into a branch/branches
 };
 

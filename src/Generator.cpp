@@ -19,44 +19,47 @@ fitnessProb::fitnessProb(long double fit, long double w) : fitness{fit}, weight{
 fitnessProb::fitnessProb() : fitness{}, weight{} {};
 
 
-void generateBoseEinstein(energyRange range, long double beta_constant, vector<fitnessProb>* fitness_distribution) {
-    /* 
-    Function that generates an energy distribution based on the "Bose-Einstein Condensation in Complex Networks" article
-    -INPUT:
-     range - minimum and maximum energy
-     beta_constant - physical variable beta = 1/T, where T is temperature (unit K), remains constant during network generation
-     fitness_distribution - vector pointer to the network's fitness distribution
-     */
-    int theta{1}; // the theta constant
-    long double increment{(long double)(range.maximum - range.minimum) / 1000000};
-    long double energy{range.minimum + increment};
-    int max{range.maximum};
-    long double total_weight{0};
+// void generateBoseEinstein(energyRange range, long double beta_constant, vector<fitnessProb>* fitness_distribution) {
+//     /* 
+//     Function that generates an energy distribution based on the "Bose-Einstein Condensation in Complex Networks" article
+//     -INPUT:
+//      range - minimum and maximum energy
+//      beta_constant - physical variable beta = 1/T, where T is temperature (unit K), remains constant during network generation
+//      fitness_distribution - vector pointer to the network's fitness distribution
+//      */
+//     int theta{1}; // the theta constant
+//     long double increment{(long double)(range.maximum - range.minimum) / 1000000};
+//     long double energy{range.minimum + increment};
+//     int max{range.maximum};
 
-    for (int i=0; i<999999; ++i){
-        total_weight += ((theta +1) * std::pow(energy, theta +1)) /std::pow(max, theta +1);
-        long double fitness{std::exp( -(beta_constant * energy) )};
-        (*fitness_distribution).push_back(fitnessProb(fitness, total_weight));
-        energy += increment;
-    }
-}
+//     for (int i=0; i<999999; ++i){
+//         long double weight = ((theta +1) * std::pow(energy, theta +1)) /std::pow(max, theta +1);
+//         long double fitness{std::exp( -(beta_constant * energy) )};
+//         (*fitness_distribution).emplace_back(fitnessProb(fitness, weight));
+//         energy += increment;
+//     }
+// }
 
 long double chooseFitness(vector<fitnessProb>* distribution) {
-    long double max_weight{( (*distribution).back() ).weight};
-    std::uniform_real_distribution<> area(0.0, max_weight);
-    long double prob_u = area(gen);
-    long double lower_b{0.0l};
-    for (const auto& p : *distribution){
-        if(lower_b < prob_u && prob_u <= p.weight){
-            return p.fitness;
-        }
-        lower_b = p.weight;
+    std::uniform_real_distribution<> area(0.0, 1.0);
+    long double variate = area(gen);
+    int size = distribution->size();
+    int index = std::floor(variate*size);
+    long double max_weight = (*(std::max_element(distribution->begin(), distribution->end(), [](const fitnessProb& prob1, const fitnessProb& prob2){ return (prob1.weight < prob2.weight);}))).weight;
+    auto& random_fit = (*distribution)[index];
+    // rejection method because linear searching was 99% of the process
+    while (variate*size -index >= random_fit.weight / max_weight){
+        variate = area(gen);
+        index = std::floor(variate*size);
+        random_fit = (*distribution)[index];
     }
-    std::cerr << "Something went wrong when generating a random fitness! Variate U wasn't within range.\n";
-    return 1.0;
+    
+    return random_fit.fitness;
 }
 
 WeightLeaf::WeightLeaf(int n, long double w) : name{n}, weight{w} {};
+
+auto leaf_cmp = [](const WeightLeaf* leaf1, const WeightLeaf* leaf2) {return (leaf1->weight < leaf2->weight);};
 
 WeightBranch::WeightBranch(int range_n) : is_level_one{false}, is_root{false}, staged_changes{false}, branch_name{range_n}, old_weight_range{}, total_weight{0.0l}, old_weight{0.0l}, leafs{}, branches{} {};
 
@@ -121,7 +124,9 @@ void WeightBranch::extractElement(WeightLeaf* leaf_to_rm) {
             staged_changes = true;
         }
         total_weight -= leaf_to_rm->weight;
-        leafs.erase(leaf_to_rm);
+        std::erase_if(leafs, [leaf_to_rm](auto& leaf) {return (leaf == leaf_to_rm);});
+        // leafs.erase(std::remove(leafs.begin(), leafs.end(), leaf_to_rm), leafs.end());
+        // leafs.erase(leaf_to_rm);
     }
 }
 
@@ -154,7 +159,8 @@ void WeightBranch::insertElement(WeightLeaf* new_leaf) {
             setWeightOld();
             staged_changes = true;
         }
-        leafs.insert(new_leaf);
+        leafs.push_back(new_leaf);
+        // leafs.insert(new_leaf);
         total_weight += new_leaf->weight;
     }
 }
@@ -173,32 +179,68 @@ void WeightBranch::insertElement(WeightBranch* new_branch) {
     }
 }
 
-WeightLeaf* WeightBranch::recurRejection() {
-    std::uniform_real_distribution<> area(0.0, 1.0);
-    auto variate = area(gen);
-    auto children = this->getSize();
-    int index = std::floor(variate*children);
-    if (is_level_one) {
-        long double max_weight = (*std::max_element(leafs.begin(), leafs.end(), [](const WeightLeaf* leaf1, const WeightLeaf* leaf2) {return leaf1->weight < leaf2->weight; }))->weight; // this monstrosity returns the weight of the heaviest leaf
-        auto random_leaf = std::next(leafs.begin(), index);
-        while(variate*children - index >= (*random_leaf)->weight /max_weight ){
-            variate = area(gen);
-            index = std::floor(variate * children);
-            random_leaf = std::next(leafs.begin(), index);
+long double WeightBranch::getMaxWeight(){
+    long double max{0.0};
+    if (is_level_one){
+        for (auto& leaf : leafs){
+            if (leaf->weight > max) {max = leaf->weight;}
         }
-        return (*random_leaf);
-    } else{
-        auto max_weight = (*(std::max_element(branches.begin(), branches.end(), [](const std::pair<int, WeightBranch*>& branch1, const std::pair<int, WeightBranch*>& branch2 ){ 
-            return branch1.second->getWeight() < branch2.second->getWeight(); } // this bigger monstrosity returns the weight of heaviest branch the current branch points to 
-            ))).second->getWeight();
+    }
+    return max;
+}
 
-        auto random_branch = std::next(branches.begin(), index);
-        while(variate*children - index >= (*random_branch).second->getWeight() /max_weight ){
-            variate = area(gen);
-            index = std::floor(variate * children);
-            random_branch = std::next(branches.begin(), index);
-        }
-        return (*random_branch).second->recurRejection();
+WeightLeaf* WeightBranch::isLevelOne(){
+    // long double max_weight = (*(std::max_element(leafs.begin(), leafs.end(), [](const WeightLeaf *leaf1, const WeightLeaf *leaf2){ return leaf1->weight < leaf2->weight; })))->weight; // this monstrosity returns the weight of the heaviest leaf
+    // long double max_weight = getMaxWeight();
+    long double max_weight = std::pow(2, this->getName());
+    auto children = getSize();
+    std::uniform_int_distribution<> area(0, children-1);
+    std::uniform_real_distribution<> weight(0.0, max_weight);
+    int index = area(gen);
+    long double variate = weight(gen);
+    // vector<WeightLeaf*> leaf_vector{leafs.begin(), leafs.end()};
+    // for (const auto& leaf : leafs){
+    //     leaf_vector.push_back(leaf);
+    // }
+    auto random_leaf = leafs[index];
+    // auto random_leaf = (*std::next(leafs.begin(), index));
+    
+    while (variate >= (random_leaf)->weight){
+        variate = weight(gen);
+        index = area(gen);
+        random_leaf = leafs[index];
+        // random_leaf = (*std::next(leafs.begin(), index));
+    }
+
+    return random_leaf;
+}
+
+WeightLeaf* WeightBranch::isNotLvlOne(){
+    // auto max_weight = (*(std::max_element(branches.begin(), branches.end(), [](const std::pair<int, WeightBranch*>& branch1, const std::pair<int, WeightBranch*>& branch2 ){ 
+    //         return branch1.second->getWeight() < branch2.second->getWeight(); } // this bigger monstrosity returns the weight of heaviest branch the current branch points to 
+    //         ))).second->getWeight();
+    long double max_weight = std::pow(2, this->getName());
+    
+    auto children = getSize();
+    std::uniform_int_distribution<> area(0, children-1);
+    std::uniform_real_distribution<> weight(0.0, max_weight);
+    int index = area(gen);
+    long double variate = weight(gen);
+    auto random_branch = std::next(branches.begin(), index);
+
+    while(variate >= (*random_branch).second->getWeight() ){
+        variate = weight(gen);
+        index = area(gen);
+        random_branch = std::next(branches.begin(), index);
+    }
+    return (*random_branch).second->recurRejection();
+}
+
+WeightLeaf* WeightBranch::recurRejection() {
+    if (is_level_one) {
+        return isLevelOne();
+    } else{
+        return isNotLvlOne();
     }
 }
 

@@ -12,12 +12,11 @@
 using std::unordered_map, std::unordered_set, std::vector, std::array, std::cout, std::string;
 
 
-Network::Network(string type, long double beta) : uniform_distr{true}, total_weight{}, weight_distribution{}, level_table{} {
+Network::Network(string type, long double beta) : uniform_distr{true}, total_weight{}, beta_constant{beta}, weight_distribution{}, level_table{} {
     if(type == "BEC"){
         uniform_distr = false;
-        generateBoseEinstein(energyRange(0, 1), beta, &fitness_distribution);
         for (int i = 0; i < 10; ++i){
-            all_vertices.emplace_back(Vertex(i, chooseFitness(&fitness_distribution), 2));
+            all_vertices.emplace_back(Vertex(i, generateFitness(), 2));
             if (i != 9){
                 all_edges.emplace_back(Edge(i, i+1));
             }else {
@@ -25,9 +24,8 @@ Network::Network(string type, long double beta) : uniform_distr{true}, total_wei
             }
         }
     }else if(type == "uniform"){
-        std::uniform_real_distribution<> area(0.000001, 0.999999);
         for (int i = 0; i < 10; ++i){
-            all_vertices.emplace_back(Vertex(i, area(gen), 2));
+            all_vertices.emplace_back(Vertex(i, generateFitness(), 2));
             if (i != 9){
                 all_edges.emplace_back(Edge(i, i+1));
             }else {
@@ -109,7 +107,20 @@ long double Network::generateFitness() {
         std::uniform_real_distribution<> area(0.0, 1.0);
         return area(gen);
     } else{
-        return chooseFitness(&fitness_distribution);
+        std::uniform_real_distribution<> nrg_distr(0.0, 1.0);
+        std::uniform_real_distribution<> area(0.0, 2.0);
+        // generate variate between 0 and max value of energy distribution according to article
+        long double variate = area(gen);
+        // generate energy
+        long double energy = nrg_distr(gen);
+        long double prob = 2*std::pow(energy, 1);
+        while (variate >= prob){
+            variate = area(gen);
+            energy = nrg_distr(gen);
+            prob = 2*std::pow(energy, 1);
+        }
+        long double fitness = std::exp( -(beta_constant*energy) );
+        return fitness;
     }
 }
 
@@ -162,7 +173,7 @@ void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branche
     for (auto& branch : *lower_branches){
         int range_old = branch->getRange();
         long double weight_old = branch->getWeightOld();
-        if (weight_old < 1e-10){ // if the old weight is exceptionally small we set it to 0.0, if we don't do this the whole thing will crash due to floating point errors
+        if (weight_old < 1e-5){ // if the old weight is exceptionally small we set it to 0.0, if we don't do this the whole thing will crash due to floating point errors
             weight_old = 0.0;
         }
 
@@ -298,14 +309,14 @@ void Network::updateWeights(unordered_set<WeightLeaf*>* changed_leafs, unordered
 
 void Network::addNewVertex(int name, int degree) {
     // create new vertex
-    all_vertices.emplace_back(Vertex(name, this->generateFitness(), degree));
+    all_vertices.emplace_back(Vertex(name, generateFitness(), degree));
     // container for the new leaf and the leafs of vertices that the new vertex connects to
     unordered_set<WeightLeaf*> changed_leafs{};
     unordered_set<WeightBranch*> changed_branches{};
 
     // choose degree amount of vertices according to the attachment mechanism and add their leafs to the set of changed weights (leafs)
     for (int i=0; i<degree; ++i){
-        all_edges.emplace_back(Edge(this->chooseVertex(&changed_leafs), name));
+        all_edges.emplace_back(Edge(chooseVertex(&changed_leafs), name));
     }
 
     // create a leaf for the new vertex
@@ -333,12 +344,13 @@ void Network::growNetwork(int v_amount, int e_amount) {
         // for (auto& v : all_vertices){
         //     total_weight += v.calculateWeight();
         // }
-        if (i+1 == prog){
-            cout << i+1 << " new vertices created so far!\n";
-            prog *= 10;
-            cout << "Total size: " << all_vertices.size() << '\n';
-        }
+        // if (i+1 == prog){
+        //     cout << i+1 << " new vertices created so far!\n";
+        //     prog *= 10;
+        //     cout << "Total size: " << all_vertices.size() << '\n';
+        // }
     }
+    cout << "All done\n";
 }
 
 void Network::checkWeights() {
