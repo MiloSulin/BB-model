@@ -6,7 +6,6 @@
 #include <vector>
 #include <array>
 #include <cmath>
-#include <thread>
 #include <random>
 
 using std::unordered_map, std::unordered_set, std::vector, std::array;
@@ -23,25 +22,25 @@ struct energyRange {
 
 struct fitnessProb {
     fitnessProb();
-    fitnessProb(double, double);
+    fitnessProb(long double, long double);
     // contains the weight for the specified fitness value
-    double fitness;
-    double weight;
+    long double fitness;
+    long double weight;
 };
 
 
-void generateBoseEinstein(energyRange, double, vector<fitnessProb>*);
+void generateBoseEinstein(energyRange, long double, vector<fitnessProb>*);
 
-double chooseFitness(vector<fitnessProb>*);
+long double chooseFitness(vector<fitnessProb>*);
 
 
 // objects required for constructing the full vertex distribution according to the alogrithm presented in "Dynamic Generation of Discrete Random Variates" by Matias et al.
 
 struct WeightLeaf {
     // level 0 node in the weight distribution of vertices
-    WeightLeaf(int, double);
+    WeightLeaf(int, long double);
     int name; // name of the vertex this leaf represents
-    double weight; // weight of the vertex, in the case of Bianconi-Barabasi model this is fitness multiplied by degree
+    long double weight; // weight of the vertex, in the case of Bianconi-Barabasi model this is fitness multiplied by degree
 };
 
 class WeightBranch {
@@ -49,28 +48,43 @@ class WeightBranch {
         WeightBranch(int);
         ~WeightBranch();
         void toggleRoot(); // toggles the boolean value denoting whether or not this branch is a root or not
-        double getWeight();
+        bool checkRoot();
+        long double getWeight();
+        int getName();
+        void setRangeOld();
         int getRange();
         void setLevelOne();
+        void addWeight(long double);
+        long double getWeightOld();
+        void setChangesFalse();
+
         void insertElement(WeightLeaf*);
         void insertElement(WeightBranch*);
+        void extractElement(WeightLeaf*);
+        void extractElement(int);
+
+        WeightLeaf* recurRejection();
         int getSize();
     private:
+        void setWeightOld();
         bool is_level_one;
         bool is_root;
+        bool staged_changes;
 
-        int range_moniker; // integer value x that denotes the max value of the range (2^(x-1), 2^x) this branch represents
-        double total_weight; // total weight of this branch
+        int branch_name; // integer value x that denotes the range [2^(x-1), 2^x) this branch represents
+        int old_weight_range; // integer value x that denotes the range [2^(x-1), 2^x) this branch belonged to before changes took place
+        long double total_weight; // total weight of this branch
+        long double old_weight;
         unordered_set<WeightLeaf*> leafs; // if the branch is level one it will contain a set of leaves (level 0 nodes)
         unordered_map<int, WeightBranch*> branches; // if the branch is not level one it will split into a branch/branches
 };
 
 struct WeightTable {
-    WeightTable(double, double);
-    double total_weight; // total weight in this table
-    double roots; // sum of all the ranges' upper bound
+    WeightTable(long double, long double);
+    long double total_weight; // total weight in this table
+    long double roots; // sum of all the ranges' upper bound
 };
 
-WeightBranch* findRange(int, int, unordered_map<int, unordered_set<WeightBranch*>>*);
+WeightBranch* findRange(int, int, unordered_map<int, unordered_map<int, WeightBranch*>>*);
 
 #endif

@@ -6,16 +6,16 @@
 
 using std::vector, std::array, std::cout;
 
-Vertex::Vertex(int Name, double Fit, int init_degree) : name{Name}, fitness{Fit}, degree{init_degree} {}; // assigns name, fitness and an initial degree to a vertex when it is created
+Vertex::Vertex(int Name, long double Fit, int init_degree) : name{Name}, fitness{Fit}, degree{init_degree} {}; // assigns name, fitness and an initial degree to a vertex when it is created
 
-double Vertex::calculateWeight(){
-    return degree * fitness;
+long double Vertex::calculateWeight(){
+    return (degree * fitness);
 }
-double Vertex::getFitness(){
+long double Vertex::getFitness(){
     return fitness;
 }
 void Vertex::increaseDegree(){
-    Vertex::degree++;
+    degree++;
 }
 int Vertex::getName(){
     return name;
@@ -25,7 +25,7 @@ int Vertex::getDegree(){
 }
 
 std::ostream& operator<<(std::ostream& stream, Vertex& v_printable){
-    stream << v_printable.getName() << ' ' << v_printable.getFitness() << ' ' << v_printable.getDegree();
+    stream << v_printable.getName() << ' ' << v_printable.getFitness() << ' ' << v_printable.getDegree() << ' ' << v_printable.calculateWeight();
     return stream;
 };
 

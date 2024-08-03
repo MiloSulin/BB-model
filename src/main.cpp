@@ -11,14 +11,16 @@
 using namespace std::chrono;
 using std::unordered_map, std::unordered_set, std::vector, std::array, std::cout;
 
-
 int main() {
+    const auto start_t = high_resolution_clock::now();
+
     string type = "BEC";
     Network test = Network(type);
-    test.printVertices();
-    test.initWeightDistribution();
-    test.checkWeights();
-    test.checkLevels();
+    test.growNetwork(1000, 2);
+    
+    const auto end_t = high_resolution_clock::now();
+    duration<double, std::milli> elapsed_time{end_t - start_t};
+    cout << "Time taken: " << elapsed_time << std::endl;
 
     return 0;
 }
