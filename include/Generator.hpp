@@ -3,13 +3,13 @@
 
 #include <unordered_map>
 #include <unordered_set>
-#include <set>
+#include <list>
 #include <vector>
 #include <array>
 #include <cmath>
 #include <random>
 
-using std::unordered_map, std::unordered_set, std::vector, std::array, std::set;
+using std::unordered_map, std::unordered_set, std::vector, std::array, std::list;
 
 extern std::random_device rd;
 extern std::mt19937 gen;
@@ -62,7 +62,7 @@ class WeightBranch {
 
         void insertElement(WeightLeaf*);
         void insertElement(WeightBranch*);
-        void extractElement(WeightLeaf*);
+        void extractElement(const WeightLeaf*);
         void extractElement(int);
 
         WeightLeaf* recurRejection();

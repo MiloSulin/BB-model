@@ -2,7 +2,6 @@
 #include <unordered_set>
 #include <iostream>
 #include <vector>
-#include <array>
 #include <cmath>
 #include <random>
 #include <algorithm>
@@ -18,6 +17,7 @@ energyRange::energyRange(int min, int max): minimum{min}, maximum{max} {};
 fitnessProb::fitnessProb(long double fit, long double w) : fitness{fit}, weight{w} {};
 fitnessProb::fitnessProb() : fitness{}, weight{} {};
 
+// THESE WERE DEPRECATED IN FAVOUR OF USING THE REJECTION METHOD, FOR NOW THAT FUNCTION IS FOUND IN NETWORK.CPP BUT IT SHOULD BE MOVED HERE IN THE FUTURE
 
 // void generateBoseEinstein(energyRange range, long double beta_constant, vector<fitnessProb>* fitness_distribution) {
 //     /* 
@@ -40,22 +40,22 @@ fitnessProb::fitnessProb() : fitness{}, weight{} {};
 //     }
 // }
 
-long double chooseFitness(vector<fitnessProb>* distribution) {
-    std::uniform_real_distribution<> area(0.0, 1.0);
-    long double variate = area(gen);
-    int size = distribution->size();
-    int index = std::floor(variate*size);
-    long double max_weight = (*(std::max_element(distribution->begin(), distribution->end(), [](const fitnessProb& prob1, const fitnessProb& prob2){ return (prob1.weight < prob2.weight);}))).weight;
-    auto& random_fit = (*distribution)[index];
-    // rejection method because linear searching was 99% of the process
-    while (variate*size -index >= random_fit.weight / max_weight){
-        variate = area(gen);
-        index = std::floor(variate*size);
-        random_fit = (*distribution)[index];
-    }
+// long double chooseFitness(vector<fitnessProb>* distribution) {
+//     std::uniform_real_distribution<> area(0.0, 1.0);
+//     long double variate = area(gen);
+//     int size = distribution->size();
+//     int index = std::floor(variate*size);
+//     long double max_weight = (*(std::max_element(distribution->begin(), distribution->end(), [](const fitnessProb& prob1, const fitnessProb& prob2){ return (prob1.weight < prob2.weight);}))).weight;
+//     auto& random_fit = (*distribution)[index];
+//     // rejection method because linear searching was 99% of the process
+//     while (variate*size -index >= random_fit.weight / max_weight){
+//         variate = area(gen);
+//         index = std::floor(variate*size);
+//         random_fit = (*distribution)[index];
+//     }
     
-    return random_fit.fitness;
-}
+//     return random_fit.fitness;
+// }
 
 WeightLeaf::WeightLeaf(int n, long double w) : name{n}, weight{w} {};
 
@@ -114,7 +114,7 @@ void WeightBranch::setChangesFalse() {
     staged_changes = false;
 }
 
-void WeightBranch::extractElement(WeightLeaf* leaf_to_rm) {
+void WeightBranch::extractElement(const WeightLeaf* leaf_to_rm) {
     if(!is_level_one){
         std::cerr << "Invalid argument for non-level-one branch!\n"; // this should never happen, but just in case
     } else{
@@ -124,8 +124,9 @@ void WeightBranch::extractElement(WeightLeaf* leaf_to_rm) {
             staged_changes = true;
         }
         total_weight -= leaf_to_rm->weight;
-        std::erase_if(leafs, [leaf_to_rm](auto& leaf) {return (leaf == leaf_to_rm);});
-        // leafs.erase(std::remove(leafs.begin(), leafs.end(), leaf_to_rm), leafs.end());
+        leafs.erase(std::remove(leafs.begin(), leafs.end(), leaf_to_rm), leafs.end()); // this ended up being slightly faster even though it should do the same thing as the first to below it
+        // std::erase_if(leafs, [leaf_to_rm](const auto& leaf) {return (leaf == leaf_to_rm);} );
+        // leafs.erase(std::remove_if(leafs.begin(), leafs.end(), [leaf_to_rm](auto& leaf) {return (leaf == leaf_to_rm);}), leafs.end());
         // leafs.erase(leaf_to_rm);
     }
 }
@@ -160,7 +161,6 @@ void WeightBranch::insertElement(WeightLeaf* new_leaf) {
             staged_changes = true;
         }
         leafs.push_back(new_leaf);
-        // leafs.insert(new_leaf);
         total_weight += new_leaf->weight;
     }
 }
@@ -179,46 +179,26 @@ void WeightBranch::insertElement(WeightBranch* new_branch) {
     }
 }
 
-long double WeightBranch::getMaxWeight(){
-    long double max{0.0};
-    if (is_level_one){
-        for (auto& leaf : leafs){
-            if (leaf->weight > max) {max = leaf->weight;}
-        }
-    }
-    return max;
-}
 
 WeightLeaf* WeightBranch::isLevelOne(){
-    // long double max_weight = (*(std::max_element(leafs.begin(), leafs.end(), [](const WeightLeaf *leaf1, const WeightLeaf *leaf2){ return leaf1->weight < leaf2->weight; })))->weight; // this monstrosity returns the weight of the heaviest leaf
-    // long double max_weight = getMaxWeight();
     long double max_weight = std::pow(2, this->getName());
     auto children = getSize();
     std::uniform_int_distribution<> area(0, children-1);
     std::uniform_real_distribution<> weight(0.0, max_weight);
     int index = area(gen);
     long double variate = weight(gen);
-    // vector<WeightLeaf*> leaf_vector{leafs.begin(), leafs.end()};
-    // for (const auto& leaf : leafs){
-    //     leaf_vector.push_back(leaf);
-    // }
     auto random_leaf = leafs[index];
-    // auto random_leaf = (*std::next(leafs.begin(), index));
     
     while (variate >= (random_leaf)->weight){
         variate = weight(gen);
         index = area(gen);
         random_leaf = leafs[index];
-        // random_leaf = (*std::next(leafs.begin(), index));
     }
 
     return random_leaf;
 }
 
 WeightLeaf* WeightBranch::isNotLvlOne(){
-    // auto max_weight = (*(std::max_element(branches.begin(), branches.end(), [](const std::pair<int, WeightBranch*>& branch1, const std::pair<int, WeightBranch*>& branch2 ){ 
-    //         return branch1.second->getWeight() < branch2.second->getWeight(); } // this bigger monstrosity returns the weight of heaviest branch the current branch points to 
-    //         ))).second->getWeight();
     long double max_weight = std::pow(2, this->getName());
     
     auto children = getSize();

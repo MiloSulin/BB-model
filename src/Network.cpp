@@ -1,8 +1,5 @@
-#include <unordered_map>
-#include <unordered_set>
 #include <iostream>
 #include <vector>
-#include <array>
 #include <string>
 #include <random>
 #include <exception>
@@ -12,36 +9,117 @@
 using std::unordered_map, std::unordered_set, std::vector, std::array, std::cout, std::string;
 
 
-Network::Network(string type, long double beta) : uniform_distr{true}, total_weight{}, beta_constant{beta}, weight_distribution{}, level_table{} {
-    if(type == "BEC"){
-        uniform_distr = false;
-        for (int i = 0; i < 10; ++i){
-            all_vertices.emplace_back(Vertex(i, generateFitness(), 2));
-            if (i != 9){
-                all_edges.emplace_back(Edge(i, i+1));
-            }else {
-                all_edges.emplace_back(Edge(i, 0));
+Network::Network(string type, double_t beta, int s, int* e_list1, int* e_list2, double_t* fit_list, bool for_py) : for_python{for_py}, uniform_distr{true}, total_weight{}, beta_constant{beta}, weight_distribution{}, level_table{} {
+    if (for_py == false){
+        if(type == "BEC"){
+            uniform_distr = false;
+            for (int i = 0; i < 10; ++i){
+                all_vertices.emplace_back(Vertex(i, generateFitness(), 2));
+                if (i != 9){
+                    all_edges.emplace_back(Edge(i, i+1));
+                }else {
+                    all_edges.emplace_back(Edge(i, 0));
+                }
             }
-        }
-    }else if(type == "uniform"){
-        for (int i = 0; i < 10; ++i){
-            all_vertices.emplace_back(Vertex(i, generateFitness(), 2));
-            if (i != 9){
-                all_edges.emplace_back(Edge(i, i+1));
-            }else {
-                all_edges.emplace_back(Edge(i, 0));
+        }else if(type == "uniform"){
+            for (int i = 0; i < 10; ++i){
+                all_vertices.emplace_back(Vertex(i, generateFitness(), 2));
+                if (i != 9){
+                    all_edges.emplace_back(Edge(i, i+1));
+                }else {
+                    all_edges.emplace_back(Edge(i, 0));
+                }
             }
+        }else {
+            throw std::invalid_argument("Invalid argument for network type!");
         }
-    }else {
-        throw std::invalid_argument("Invalid argument for network type!");
-    }
 
-    for (auto& v : all_vertices){
-        total_weight += v.calculateWeight();
+        for (auto& v : all_vertices){
+            total_weight += v.calculateWeight();
+        }
+    } else if (for_py == true){
+        if (type == "BEC"){
+            this->uniform_distr = false;
+            for (int i = 0; i < 10; ++i){
+                all_vertices.emplace_back(Vertex(i, generateFitness(), 2));
+                (fit_list[i]) = double_t(this->all_vertices.back().getFitness());
+                if (i != 9){
+                    // all_edges.emplace_back(Edge(i, i+1));
+                    (e_list1[i]) = i;
+                    (e_list2[i]) = i+1;
+                }else {
+                    // all_edges.emplace_back(Edge(i, 0));
+                    (e_list1[i]) = i;
+                    (e_list2[i]) = 0;
+                }
+            }
+        }else if (type == "uniform"){
+            this->uniform_distr = true;
+            for (int i = 0; i < 10; ++i){
+                this->all_vertices.emplace_back(Vertex(i, generateFitness(), 2));
+                (fit_list[i]) = double_t(this->all_vertices.back().getFitness());
+                if (i != 9){
+                    // all_edges.emplace_back(Edge(i, i+1));
+                    (e_list1[i]) = i;
+                    (e_list2[i]) = i+1;
+                }else {
+                    // all_edges.emplace_back(Edge(i, 0));
+                    (e_list1[i]) = i;
+                    (e_list2[i]) = 0;
+                }
+            }
+        }else {
+            throw std::invalid_argument("Invalid argument for network type!");
     }
-
+        for (auto& v : this->all_vertices){
+            this->total_weight += v.calculateWeight();
+        }
+    }
     initWeightDistribution();
 }
+
+// NetworkPy::NetworkPy(string type, double_t beta, int s, int* e_list1, int* e_list2, double_t* fit_list) : size{s}, uniform_distr{}, total_weight{}, beta_constant{beta}, weight_distribution{}, level_table{} {
+//     if(type == "BEC"){
+//         this->uniform_distr = false;
+//         for (int i = 0; i < 10; ++i){
+//             all_vertices.emplace_back(Vertex(i, this->generateFitness(), 2));
+//             cout << (this->all_vertices.back().getFitness()) << '\n';
+//             (fit_list[i]) = double_t(this->all_vertices.back().getFitness());
+//             if (i != 9){
+//                 // all_edges.emplace_back(Edge(i, i+1));
+//                 (e_list1[i]) = i;
+//                 (e_list2[i]) = i+1;
+//             }else {
+//                 // all_edges.emplace_back(Edge(i, 0));
+//                 (e_list1[i]) = i;
+//                 (e_list2[i]) = 0;
+//             }
+//         }
+//     }else if(type == "uniform"){
+//         this->uniform_distr = true;
+//         for (int i = 0; i < 10; ++i){
+//             this->all_vertices.emplace_back(Vertex(i, this->generateFitness(), 2));
+//             (fit_list[i]) = double_t(this->all_vertices.back().getFitness());
+//             if (i != 9){
+//                 // all_edges.emplace_back(Edge(i, i+1));
+//                 (e_list1[i]) = i;
+//                 (e_list2[i]) = i+1;
+//             }else {
+//                 // all_edges.emplace_back(Edge(i, 0));
+//                 (e_list1[i]) = i;
+//                 (e_list2[i]) = 0;
+//             }
+//         }
+//     }else {
+//         throw std::invalid_argument("Invalid argument for network type!");
+//     }
+
+//     for (auto& v : this->all_vertices){
+//         this->total_weight += v.calculateWeight();
+//     }
+
+//     this->initWeightDistribution();
+// }
 
 Network::~Network() {
     for (auto& e : weight_distribution){
@@ -103,7 +181,7 @@ void Network::initWeightDistribution() {
 }
 
 long double Network::generateFitness() {
-    if (uniform_distr){
+    if (this->uniform_distr){
         std::uniform_real_distribution<> area(0.0, 1.0);
         return area(gen);
     } else{
@@ -165,6 +243,7 @@ int Network::chooseVertex(unordered_set<WeightLeaf*>* changed_leafs) {
 }
 
 void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branches) {
+    // TO DO: CLEAN THIS MESS UP, NEEDS TO BE SPLIT INTO SMALLER FUNCTIONS FOR MORE READABLE CODE
     unordered_set<WeightBranch*> higher_branches{};
     long double table_weight_delta{0.0};
     long double table_roots_delta{0.0};
@@ -183,7 +262,7 @@ void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branche
         int branch_size = branch->getSize();
 
         if (weight_old != 0.0 && !branch->checkRoot()){ // those branches which had a weight above 0 before changes took place and were not roots will have a parent
-            if(!level_table[level+1].contains(range_old)){
+            if(!level_table[level+1].contains(range_old)){ // print information about state to console if an impossible state is reached
                 this->checkWeights();
                 this->checkLevels();
                 cout << '\n';
@@ -335,23 +414,57 @@ void Network::addNewVertex(int name, int degree) {
     updateWeights(&changed_leafs, &changed_branches);
 }
 
+void Network::addNewVertexPy(int name, int degree, int* e_list1, int* e_list2, double_t* fit_list, int edge_index) {
+    // create new vertex
+    all_vertices.emplace_back(Vertex(name, generateFitness(), degree));
+    (fit_list[name]) = double_t(all_vertices.back().getFitness());
+    // container for the new leaf and the leafs of vertices that the new vertex connects to
+    unordered_set<WeightLeaf*> changed_leafs{};
+    unordered_set<WeightBranch*> changed_branches{};
+
+    // choose degree amount of vertices according to the attachment mechanism and add their leafs to the set of changed weights (leafs)
+    for (int i=0; i<degree; ++i){
+        // all_edges.emplace_back(Edge(chooseVertex(&changed_leafs), name));
+        int ancestor_name = chooseVertex(&changed_leafs);
+        (e_list1[edge_index+i]) = ancestor_name;
+        (e_list2[edge_index+i]) = name;
+    }
+
+    // create a leaf for the new vertex
+    Vertex* new_vertex = &(all_vertices.back());
+    long double v_weight = new_vertex->calculateWeight();
+    int range_of_weight = std::floor(std::log2(v_weight)) + 1;
+    auto ptr_to_range = findRange(range_of_weight, 1, &level_table);
+    ptr_to_range->setLevelOne();
+    WeightLeaf* new_leaf = new WeightLeaf(name, v_weight);
+    ptr_to_range->insertElement(new_leaf);
+    changed_branches.insert(ptr_to_range);
+
+    total_weight += v_weight;
+
+    // update the weights of the leafs that were changed and the weights of upper range branches when necessary
+    updateWeights(&changed_leafs, &changed_branches);
+}
+
 void Network::growNetwork(int v_amount, int e_amount) {
     int prog{1};
     int first_name = all_vertices.size();
     for (int i=0; i<v_amount; ++i){
         addNewVertex(first_name+i, e_amount);
-        // total_weight = 0.0l;
-        // for (auto& v : all_vertices){
-        //     total_weight += v.calculateWeight();
-        // }
-        // if (i+1 == prog){
-        //     cout << i+1 << " new vertices created so far!\n";
-        //     prog *= 10;
-        //     cout << "Total size: " << all_vertices.size() << '\n';
-        // }
     }
     cout << "All done\n";
 }
+
+void Network::growNetworkPy(int v_amount, int e_amount, int* e_list1, int* e_list2, double_t* fit_list) {
+    int first_name = all_vertices.size();
+    int edge_index = first_name;
+    for (int i=0; i<v_amount; ++i){
+        addNewVertexPy(first_name+i, e_amount, e_list1, e_list2, fit_list, edge_index);
+        edge_index += 2;
+    }
+}
+
+// these print state info to console
 
 void Network::checkWeights() {
     cout << "Total weight of network: " << total_weight << '\n';

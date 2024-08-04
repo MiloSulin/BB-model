@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <array>
 #include <thread>
 #include "NetworkComponents.hpp"
 

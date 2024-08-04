@@ -1,2 +1,4 @@
 build
 build_mac
+build_win
+.vscode
