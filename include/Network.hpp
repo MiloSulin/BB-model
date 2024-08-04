@@ -14,7 +14,7 @@ using std::map, std::unordered_map, std::unordered_set, std::vector, std::array,
 
 class Network {
     public:
-        Network(string type="uniform", double_t beta=1.0, int size=10, int* e_list1=nullptr, int* e_list2=nullptr, double_t* fit_list=nullptr, bool for_python=false); // beta parameter is the physical quantity 1/T for the Bose-Einstein fitness with default value 1.0
+        Network(string type="uniform", double_t beta=1.0, int* e_list1=nullptr, int* e_list2=nullptr, double_t* fit_list=nullptr, bool for_python=false); // beta parameter is the physical quantity 1/T for the Bose-Einstein fitness with default value 1.0
         // Network(string type="uniform", long double beta=1.0, int*, long double*); // Py wrapper version of constructor that doesn't init edge vector and instead uses the provided edge matrix pointer
         ~Network();
         void growNetwork(int, int); // simulates network growth, first parameter denotes how many new vertices are created and the second the amount of new edges they create

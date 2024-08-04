@@ -14,8 +14,9 @@ int main() {
     const auto start_t = high_resolution_clock::now();
 
     string type = "BEC";
-    Network test = Network(type, false);
-    test.growNetwork(100000, 2);
+    double_t beta = 0; 
+    Network test = Network(type, beta);
+    test.growNetwork(1000000, 2);
     
     const auto end_t = high_resolution_clock::now();
     duration<double, std::milli> elapsed_time{end_t - start_t};

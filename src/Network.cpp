@@ -9,7 +9,7 @@
 using std::unordered_map, std::unordered_set, std::vector, std::array, std::cout, std::string;
 
 
-Network::Network(string type, double_t beta, int s, int* e_list1, int* e_list2, double_t* fit_list, bool for_py) : for_python{for_py}, uniform_distr{true}, total_weight{}, beta_constant{beta}, weight_distribution{}, level_table{} {
+Network::Network(string type, double_t beta, int* e_list1, int* e_list2, double_t* fit_list, bool for_py) : for_python{for_py}, uniform_distr{true}, total_weight{}, beta_constant{beta}, weight_distribution{}, level_table{} {
     if (for_py == false){
         if(type == "BEC"){
             uniform_distr = false;
