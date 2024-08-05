@@ -250,18 +250,20 @@ void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branche
     bool level_has_roots{weight_distribution.contains(level)};
 
     for (auto& branch : *lower_branches){
-        int range_old = branch->getRange();
+        int size_old = branch->getSizeOld();
+        // int range_old = branch->getRange();
         long double weight_old = branch->getWeightOld();
-        if (weight_old < 1e-5){ // if the old weight is exceptionally small we set it to 0.0, if we don't do this the whole thing will crash due to floating point errors
-            weight_old = 0.0;
-        }
+        int range_old = std::floor( std::log2(weight_old) ) +1;
+        // if (weight_old < 1e-10){ // if the old weight is exceptionally small we set it to 0.0, if we don't do this the whole thing will crash due to floating point errors
+        //     weight_old = 0.0;
+        // }
 
         long double weight_new = branch->getWeight();
         int range_new = std::floor( std::log2(weight_new) ) +1;
         int branch_name = branch->getName();
         int branch_size = branch->getSize();
 
-        if (weight_old != 0.0 && !branch->checkRoot()){ // those branches which had a weight above 0 before changes took place and were not roots will have a parent
+        if (size_old != 0 && !branch->checkRoot()){ // those branches which had a weight above 0 before changes took place and were not roots will have a parent
             if(!level_table[level+1].contains(range_old)){ // print information about state to console if an impossible state is reached
                 this->checkWeights();
                 this->checkLevels();
@@ -297,7 +299,7 @@ void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branche
                 ptr_old_branch->extractElement(branch_name);
             }
             higher_branches.insert(ptr_old_branch);
-        } else if(weight_old != 0.0 && branch->checkRoot()){ // case of a branch not being empty at the start and being a root
+        } else if(size_old != 0 && branch->checkRoot()){ // case of a branch not being empty at the start and being a root
             if (branch_size > 1){ // branch has more than one child and so it stops being a root
                 if(level_has_roots){
                     weight_distribution[level]->roots -= std::pow(2, branch_name);
@@ -315,7 +317,7 @@ void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branche
                 weight_distribution[level]->roots -= std::pow(2, branch_name);
                 weight_distribution[level]->total_weight -= weight_old;
             }
-        } else if(weight_old == 0.0){ // case of branch being empty before updates
+        } else if(size_old == 0){ // case of branch being empty before updates
             if (branch_size > 1){
                 auto ptr_new_range = findRange(range_new, level+1, &level_table);
                 ptr_new_range->insertElement(branch);

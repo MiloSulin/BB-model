@@ -61,7 +61,7 @@ WeightLeaf::WeightLeaf(int n, long double w) : name{n}, weight{w} {};
 
 auto leaf_cmp = [](const WeightLeaf* leaf1, const WeightLeaf* leaf2) {return (leaf1->weight < leaf2->weight);};
 
-WeightBranch::WeightBranch(int range_n) : is_level_one{false}, is_root{false}, staged_changes{false}, branch_name{range_n}, old_weight_range{}, total_weight{0.0l}, old_weight{0.0l}, leafs{}, branches{} {};
+WeightBranch::WeightBranch(int range_n) : is_level_one{false}, is_root{false}, staged_changes{false}, branch_name{range_n}, total_weight{0.0l}, old_weight{0.0l}, leafs{}, branches{} {};
 
 WeightBranch::~WeightBranch() {for (auto& e : leafs) {delete e;}};
 
@@ -81,26 +81,35 @@ int WeightBranch::getName() {
     return branch_name;
 }
 
-void WeightBranch::setRangeOld() {
-    old_weight_range = std::floor( std::log2(total_weight) ) +1;
-}
+// void WeightBranch::setRangeOld() {
+//     old_weight_range = std::floor( std::log2(total_weight) ) +1;
+// }
 
 void WeightBranch::setWeightOld() {
     old_weight = total_weight;
 }
 
-int WeightBranch::getRange() {
-    return old_weight_range;   
+void WeightBranch::setSizeOld() {
+    old_size = this->getSize();
 }
+
+// int WeightBranch::getRange() {
+//     return old_weight_range;   
+// }
 
 long double WeightBranch::getWeight() {
     return total_weight;
 }
 
+int WeightBranch::getSizeOld() {
+    return old_size;
+}
+
 void WeightBranch::addWeight(long double weight_delta) {
     if (!staged_changes){
-        setRangeOld();
+        // setRangeOld();
         setWeightOld();
+        setSizeOld();
         staged_changes = true;
     }
     total_weight += weight_delta;
@@ -119,7 +128,8 @@ void WeightBranch::extractElement(const WeightLeaf* leaf_to_rm) {
         std::cerr << "Invalid argument for non-level-one branch!\n"; // this should never happen, but just in case
     } else{
         if (!staged_changes){
-            setRangeOld();
+            setSizeOld();
+            // setRangeOld();
             setWeightOld();
             staged_changes = true;
         }
@@ -142,7 +152,8 @@ void WeightBranch::extractElement(int range) {
             std::cout << "Children: " << getSize() << '\n';
         }
         if (!staged_changes){
-            setRangeOld();
+            setSizeOld();
+            // setRangeOld();
             setWeightOld();
             staged_changes = true;
         }
@@ -156,7 +167,8 @@ void WeightBranch::insertElement(WeightLeaf* new_leaf) {
         std::cerr << "Invalid argument for non-level-one branch!\n"; // this should never happen, but just in case
     } else{
         if (!staged_changes){
-            setRangeOld();
+            setSizeOld();
+            // setRangeOld();
             setWeightOld();
             staged_changes = true;
         }
@@ -170,7 +182,8 @@ void WeightBranch::insertElement(WeightBranch* new_branch) {
         std::cerr << "Invalid argument for level-one branch!\n"; // this should never happen, but just in case
     } else{
         if (!staged_changes){
-            setRangeOld();
+            setSizeOld();
+            // setRangeOld();
             setWeightOld();
             staged_changes = true;
         }

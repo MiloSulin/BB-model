@@ -49,15 +49,16 @@ class WeightBranch {
     public:
         WeightBranch(int);
         ~WeightBranch();
+        void setLevelOne();
         void toggleRoot(); // toggles the boolean value denoting whether or not this branch is a root or not
         bool checkRoot();
         long double getWeight();
         int getName();
-        void setRangeOld();
-        int getRange();
-        void setLevelOne();
+        int getSize();
+        // int getRange();
         void addWeight(long double);
         long double getWeightOld();
+        int getSizeOld();
         void setChangesFalse();
 
         void insertElement(WeightLeaf*);
@@ -66,20 +67,21 @@ class WeightBranch {
         void extractElement(int);
 
         WeightLeaf* recurRejection();
-        int getSize();
     private:
+        // void setRangeOld();
+        void setSizeOld();
         WeightLeaf* isLevelOne();
         WeightLeaf* isNotLvlOne();
-        long double getMaxWeight();
         void setWeightOld();
         bool is_level_one;
         bool is_root;
         bool staged_changes;
 
         int branch_name; // integer value x that denotes the range [2^(x-1), 2^x) this branch represents
-        int old_weight_range; // integer value x that denotes the range [2^(x-1), 2^x) this branch belonged to before changes took place
+        // int old_weight_range; // integer value x that denotes the range [2^(x-1), 2^x) this branch belonged to before changes took place
         long double total_weight; // total weight of this branch
         long double old_weight;
+        int old_size;
         vector<WeightLeaf*> leafs; // if the branch is level one it will contain a set of leaves (level 0 nodes)
         unordered_map<int, WeightBranch*> branches; // if the branch is not level one it will split into a branch/branches
 };
