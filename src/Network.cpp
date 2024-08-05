@@ -457,7 +457,7 @@ void Network::growNetwork(int v_amount, int e_amount) {
     for (int i=0; i<v_amount; ++i){
         addNewVertex(first_name+i, e_amount);
     }
-    cout << "All done\n";
+    // cout << "All done\n";
 }
 
 void Network::growNetworkPy(int v_amount, int e_amount, int* e_list1, int* e_list2, double_t* fit_list) {
