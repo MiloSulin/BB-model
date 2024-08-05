@@ -387,6 +387,10 @@ void Network::updateWeights(unordered_set<LeafResult*>* changed_leafs, unordered
 
         this->total_weight += (new_weight - old_weight);
     }
+
+    for (auto& e : *changed_leafs){
+        delete e;
+    }
     
     updateLevel(1, &higher_branches);
 }

@@ -17,7 +17,7 @@ int main() {
         const auto start_t = high_resolution_clock::now();
 
         Network test = Network("BEC", 0.5);
-        test.growNetwork(100000, 2);
+        test.growNetwork(1000, 2);
         // cout << "Test\n";
 
         const auto end_t = high_resolution_clock::now();
