@@ -29,9 +29,9 @@ class Network {
         void constructLevel(int, unordered_set<WeightBranch*>*);
         void initWeightDistribution();
         long double generateFitness();
-        int chooseVertex(unordered_set<WeightLeaf *> *);
+        int chooseVertex(unordered_set<LeafResult*>*);
         void updateLevel(int, unordered_set<WeightBranch*>*);
-        void updateWeights(unordered_set<WeightLeaf*>*, unordered_set<WeightBranch*>*);
+        void updateWeights(unordered_set<LeafResult*>*, unordered_set<WeightBranch*>*);
 
         // vector<fitnessProb> fitness_distribution;
         bool for_python;

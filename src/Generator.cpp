@@ -59,7 +59,13 @@ fitnessProb::fitnessProb() : fitness{}, weight{} {};
 
 WeightLeaf::WeightLeaf(int n, long double w) : name{n}, weight{w} {};
 
-auto leaf_cmp = [](const WeightLeaf* leaf1, const WeightLeaf* leaf2) {return (leaf1->weight < leaf2->weight);};
+
+LeafResult::LeafResult() : chosen_leaf{nullptr}, leaf_index{} {};
+
+LeafResult::LeafResult(WeightLeaf* chosen_l, int leaf_i) : chosen_leaf{chosen_l}, leaf_index{leaf_i} {};
+
+
+// auto leaf_cmp = [](const WeightLeaf* leaf1, const WeightLeaf* leaf2) {return (leaf1->weight < leaf2->weight);};
 
 WeightBranch::WeightBranch(int range_n) : is_level_one{false}, is_root{false}, staged_changes{false}, branch_name{range_n}, total_weight{0.0l}, old_weight{0.0l}, leafs{}, branches{} {};
 
@@ -123,7 +129,7 @@ void WeightBranch::setChangesFalse() {
     staged_changes = false;
 }
 
-void WeightBranch::extractElement(const WeightLeaf* leaf_to_rm) {
+void WeightBranch::extractElement(const WeightLeaf* leaf_to_rm, int index) {
     if(!is_level_one){
         std::cerr << "Invalid argument for non-level-one branch!\n"; // this should never happen, but just in case
     } else{
@@ -134,7 +140,9 @@ void WeightBranch::extractElement(const WeightLeaf* leaf_to_rm) {
             staged_changes = true;
         }
         total_weight -= leaf_to_rm->weight;
-        leafs.erase(std::remove(leafs.begin(), leafs.end(), leaf_to_rm), leafs.end()); // this ended up being slightly faster even though it should do the same thing as the first to below it
+        std::iter_swap(leafs.begin() +index, leafs.end()-1);
+        this->leafs.pop_back();
+        // leafs.erase(std::remove(leafs.begin(), leafs.end(), leaf_to_rm), leafs.end()); // this ended up being slightly faster even though it should do the same thing as the first to below it
         // std::erase_if(leafs, [leaf_to_rm](const auto& leaf) {return (leaf == leaf_to_rm);} );
         // leafs.erase(std::remove_if(leafs.begin(), leafs.end(), [leaf_to_rm](auto& leaf) {return (leaf == leaf_to_rm);}), leafs.end());
         // leafs.erase(leaf_to_rm);
@@ -193,7 +201,7 @@ void WeightBranch::insertElement(WeightBranch* new_branch) {
 }
 
 
-WeightLeaf* WeightBranch::isLevelOne(){
+LeafResult* WeightBranch::isLevelOne(){
     long double max_weight = std::pow(2, this->getName());
     auto children = getSize();
     std::uniform_int_distribution<> area(0, children-1);
@@ -207,11 +215,11 @@ WeightLeaf* WeightBranch::isLevelOne(){
         index = area(gen);
         random_leaf = leafs[index];
     }
-
-    return random_leaf;
+    LeafResult* result = new LeafResult(random_leaf, index);
+    return result;
 }
 
-WeightLeaf* WeightBranch::isNotLvlOne(){
+LeafResult* WeightBranch::isNotLvlOne(){
     long double max_weight = std::pow(2, this->getName());
     
     auto children = getSize();
@@ -229,7 +237,7 @@ WeightLeaf* WeightBranch::isNotLvlOne(){
     return (*random_branch).second->recurRejection();
 }
 
-WeightLeaf* WeightBranch::recurRejection() {
+LeafResult* WeightBranch::recurRejection() {
     if (is_level_one) {
         return isLevelOne();
     } else{

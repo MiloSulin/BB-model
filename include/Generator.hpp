@@ -44,6 +44,12 @@ struct WeightLeaf {
     long double weight; // weight of the vertex, in the case of Bianconi-Barabasi model this is fitness multiplied by degree
 };
 
+struct LeafResult {
+    LeafResult();
+    LeafResult(WeightLeaf*, int);
+    WeightLeaf* chosen_leaf;
+    int leaf_index;
+};
 
 class WeightBranch {
     public:
@@ -63,15 +69,15 @@ class WeightBranch {
 
         void insertElement(WeightLeaf*);
         void insertElement(WeightBranch*);
-        void extractElement(const WeightLeaf*);
+        void extractElement(const WeightLeaf*, int);
         void extractElement(int);
 
-        WeightLeaf* recurRejection();
+        LeafResult* recurRejection();
     private:
         // void setRangeOld();
         void setSizeOld();
-        WeightLeaf* isLevelOne();
-        WeightLeaf* isNotLvlOne();
+        LeafResult* isLevelOne();
+        LeafResult* isNotLvlOne();
         void setWeightOld();
         bool is_level_one;
         bool is_root;

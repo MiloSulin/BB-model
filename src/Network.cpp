@@ -202,7 +202,7 @@ long double Network::generateFitness() {
     }
 }
 
-int Network::chooseVertex(unordered_set<WeightLeaf*>* changed_leafs) {
+int Network::chooseVertex(unordered_set<LeafResult*>* changed_leafs) {
     std::uniform_real_distribution<> area(0.0, 1.0);
     int chosen_level{};
     long double variate = area(gen);
@@ -234,9 +234,9 @@ int Network::chooseVertex(unordered_set<WeightLeaf*>* changed_leafs) {
         throw std::runtime_error("");
     }
     // perform recursive rejection method until a leaf is reached and therefore a vertex chosen
-    WeightLeaf* chosen_leaf = chosen_root_ptr->recurRejection();
-    int chosen_vertex = chosen_leaf->name;
-    changed_leafs->insert(chosen_leaf);
+    LeafResult* leaf_result = chosen_root_ptr->recurRejection();
+    int chosen_vertex = leaf_result->chosen_leaf->name;
+    changed_leafs->insert(leaf_result);
     all_vertices[chosen_vertex].increaseDegree();
 
     return chosen_vertex;
@@ -354,9 +354,11 @@ void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branche
     if (!higher_branches.empty()) {updateLevel(level+1, &higher_branches);} // if branches on the above level were changed update recursively
 }
 
-void Network::updateWeights(unordered_set<WeightLeaf*>* changed_leafs, unordered_set<WeightBranch*>* changed_branches) {
+void Network::updateWeights(unordered_set<LeafResult*>* changed_leafs, unordered_set<WeightBranch*>* changed_branches) {
     unordered_set<WeightBranch*> higher_branches = *changed_branches;
-    for (auto& leaf : *changed_leafs){
+    for (auto& leaf_result : *changed_leafs){
+        auto leaf = leaf_result->chosen_leaf;
+        auto leaf_index = leaf_result->leaf_index;
         // get range before changing weight
         int range_old = std::floor( std::log2(leaf->weight) ) +1;
 
@@ -369,7 +371,7 @@ void Network::updateWeights(unordered_set<WeightLeaf*>* changed_leafs, unordered
 
         // check if range has changed and update if needed
         if (range_old != range_new){
-            level_table[1][range_old]->extractElement(leaf);
+            level_table[1][range_old]->extractElement(leaf, leaf_index);
             higher_branches.insert(level_table[1][range_old]);
             auto ptr_new_range = findRange(range_new, 1, &level_table);
             ptr_new_range->setLevelOne();
@@ -385,6 +387,7 @@ void Network::updateWeights(unordered_set<WeightLeaf*>* changed_leafs, unordered
 
         this->total_weight += (new_weight - old_weight);
     }
+    
     updateLevel(1, &higher_branches);
 }
 
@@ -392,7 +395,7 @@ void Network::addNewVertex(int name, int degree) {
     // create new vertex
     all_vertices.emplace_back(Vertex(name, generateFitness(), degree));
     // container for the new leaf and the leafs of vertices that the new vertex connects to
-    unordered_set<WeightLeaf*> changed_leafs{};
+    unordered_set<LeafResult*> changed_leafs{};
     unordered_set<WeightBranch*> changed_branches{};
 
     // choose degree amount of vertices according to the attachment mechanism and add their leafs to the set of changed weights (leafs)
@@ -421,7 +424,7 @@ void Network::addNewVertexPy(int name, int degree, int* e_list1, int* e_list2, d
     all_vertices.emplace_back(Vertex(name, generateFitness(), degree));
     (fit_list[name]) = double_t(all_vertices.back().getFitness());
     // container for the new leaf and the leafs of vertices that the new vertex connects to
-    unordered_set<WeightLeaf*> changed_leafs{};
+    unordered_set<LeafResult*> changed_leafs{};
     unordered_set<WeightBranch*> changed_branches{};
 
     // choose degree amount of vertices according to the attachment mechanism and add their leafs to the set of changed weights (leafs)
