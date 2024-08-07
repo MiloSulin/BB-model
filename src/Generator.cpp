@@ -64,6 +64,10 @@ LeafResult::LeafResult() : chosen_leaf{nullptr}, leaf_index{} {};
 
 LeafResult::LeafResult(WeightLeaf* chosen_l, int leaf_i) : chosen_leaf{chosen_l}, leaf_index{leaf_i} {};
 
+bool LeafCompare::operator()(const LeafResult* leaf1, const LeafResult* leaf2) const {
+    return ( (leaf1->chosen_leaf != leaf2->chosen_leaf) && ( (leaf1->leaf_index > leaf2->leaf_index) ) );
+}
+
 
 // auto leaf_cmp = [](const WeightLeaf* leaf1, const WeightLeaf* leaf2) {return (leaf1->weight < leaf2->weight);};
 
@@ -140,8 +144,12 @@ void WeightBranch::extractElement(const WeightLeaf* leaf_to_rm, int index) {
             staged_changes = true;
         }
         total_weight -= leaf_to_rm->weight;
-        std::iter_swap(leafs.begin() +index, leafs.end()-1);
-        this->leafs.pop_back();
+        if (this->getSize() > 1){
+            std::iter_swap(leafs.begin() +index, leafs.end()-1);
+            this->leafs.pop_back();
+        } else{
+            this->leafs.clear();
+        }
         // leafs.erase(std::remove(leafs.begin(), leafs.end(), leaf_to_rm), leafs.end()); // this ended up being slightly faster even though it should do the same thing as the first to below it
         // std::erase_if(leafs, [leaf_to_rm](const auto& leaf) {return (leaf == leaf_to_rm);} );
         // leafs.erase(std::remove_if(leafs.begin(), leafs.end(), [leaf_to_rm](auto& leaf) {return (leaf == leaf_to_rm);}), leafs.end());

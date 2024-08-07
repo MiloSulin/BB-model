@@ -3,7 +3,6 @@
 #include <string>
 #include <random>
 #include <exception>
-#include "NetworkComponents.hpp"
 #include "Network.hpp"
 
 using std::unordered_map, std::unordered_set, std::vector, std::array, std::cout, std::string;
@@ -202,7 +201,7 @@ long double Network::generateFitness() {
     }
 }
 
-int Network::chooseVertex(unordered_set<LeafResult*>* changed_leafs) {
+int Network::chooseVertex(set<LeafResult*, LeafCompare>* changed_leafs) {
     std::uniform_real_distribution<> area(0.0, 1.0);
     int chosen_level{};
     long double variate = area(gen);
@@ -354,7 +353,7 @@ void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branche
     if (!higher_branches.empty()) {updateLevel(level+1, &higher_branches);} // if branches on the above level were changed update recursively
 }
 
-void Network::updateWeights(unordered_set<LeafResult*>* changed_leafs, unordered_set<WeightBranch*>* changed_branches) {
+void Network::updateWeights(set<LeafResult*, LeafCompare>* changed_leafs, unordered_set<WeightBranch*>* changed_branches) {
     unordered_set<WeightBranch*> higher_branches = *changed_branches;
     for (auto& leaf_result : *changed_leafs){
         auto leaf = leaf_result->chosen_leaf;
@@ -399,7 +398,7 @@ void Network::addNewVertex(int name, int degree) {
     // create new vertex
     all_vertices.emplace_back(Vertex(name, generateFitness(), degree));
     // container for the new leaf and the leafs of vertices that the new vertex connects to
-    unordered_set<LeafResult*> changed_leafs{};
+    set<LeafResult*, LeafCompare> changed_leafs{};
     unordered_set<WeightBranch*> changed_branches{};
 
     // choose degree amount of vertices according to the attachment mechanism and add their leafs to the set of changed weights (leafs)
@@ -428,7 +427,7 @@ void Network::addNewVertexPy(int name, int degree, int* e_list1, int* e_list2, d
     all_vertices.emplace_back(Vertex(name, generateFitness(), degree));
     (fit_list[name]) = double_t(all_vertices.back().getFitness());
     // container for the new leaf and the leafs of vertices that the new vertex connects to
-    unordered_set<LeafResult*> changed_leafs{};
+    set<LeafResult*, LeafCompare> changed_leafs{};
     unordered_set<WeightBranch*> changed_branches{};
 
     // choose degree amount of vertices according to the attachment mechanism and add their leafs to the set of changed weights (leafs)
@@ -469,7 +468,7 @@ void Network::growNetworkPy(int v_amount, int e_amount, int* e_list1, int* e_lis
     int edge_index = first_name;
     for (int i=0; i<v_amount; ++i){
         addNewVertexPy(first_name+i, e_amount, e_list1, e_list2, fit_list, edge_index);
-        edge_index += 2;
+        edge_index += e_amount;
     }
 }
 

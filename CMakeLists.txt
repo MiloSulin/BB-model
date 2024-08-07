@@ -20,4 +20,8 @@ target_include_directories( BBnetworkModel${CMAKE_SYSTEM_NAME}
     PRIVATE ${PROJECT_SOURCE_DIR}/include
 )
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 target_link_libraries( BBnetworkModel${CMAKE_SYSTEM_NAME} -static-libgcc -static-libstdc++)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+target_link_libraries( BBnetworkModel${CMAKE_SYSTEM_NAME} -std=libc++)
+endif()

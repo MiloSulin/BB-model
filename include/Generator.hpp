@@ -51,6 +51,10 @@ struct LeafResult {
     int leaf_index;
 };
 
+struct LeafCompare {
+    bool operator()(const LeafResult*, const LeafResult*) const;
+};
+
 class WeightBranch {
     public:
         WeightBranch(int);

@@ -4,13 +4,14 @@
 #include <unordered_map>
 #include <map>
 #include <unordered_set>
+#include <set>
 #include <iostream>
 #include <vector>
 #include <string>
 #include "NetworkComponents.hpp"
 #include "Generator.hpp"
 
-using std::map, std::unordered_map, std::unordered_set, std::vector, std::array, std::cout, std::string;
+using std::map, std::unordered_map, std::unordered_set, std::set, std::vector, std::array, std::cout, std::string;
 
 class Network {
     public:
@@ -29,9 +30,9 @@ class Network {
         void constructLevel(int, unordered_set<WeightBranch*>*);
         void initWeightDistribution();
         long double generateFitness();
-        int chooseVertex(unordered_set<LeafResult*>*);
+        int chooseVertex(set<LeafResult*, LeafCompare>*);
         void updateLevel(int, unordered_set<WeightBranch*>*);
-        void updateWeights(unordered_set<LeafResult*>*, unordered_set<WeightBranch*>*);
+        void updateWeights(set<LeafResult*, LeafCompare>*, unordered_set<WeightBranch*>*);
 
         // vector<fitnessProb> fitness_distribution;
         bool for_python;
