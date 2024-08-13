@@ -220,11 +220,15 @@ int Network::chooseVertex(set<LeafResult*, LeafCompare>* changed_leafs) {
     auto chosen_table = weight_distribution[chosen_level];
     long double table_weight = chosen_table->total_weight;
     long double roots_range = chosen_table->roots;
+
+    variate = area(gen); // generate new variate
     int chosen_root_range = std::floor( std::log2(roots_range) ); // integer representing the range moniker of the chosen root
-    while ((variate <= table_weight / this->total_weight) && roots_range != 0){
-        chosen_root_range = std::floor( std::log2(roots_range) );
-        table_weight -= level_table[chosen_level][chosen_root_range]->getWeight();
+    long double cumul_weight = level_table[chosen_level][chosen_root_range]->getWeight();
+
+    while ((variate > cumul_weight / table_weight) && roots_range != 0){ // iterate until the ratio of the sum and table weight is bigger than variate, start from highest range
         roots_range -= std::pow(2, chosen_root_range);
+        chosen_root_range = std::floor( std::log2(roots_range) );
+        cumul_weight += level_table[chosen_level][chosen_root_range]->getWeight();
     }
     auto chosen_root_ptr = level_table[chosen_level][chosen_root_range];
 
@@ -304,7 +308,7 @@ void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branche
                     weight_distribution[level]->roots -= std::pow(2, branch_name);
                     weight_distribution[level]->total_weight -= weight_old;
                 } else{
-                    cout << "THIS SHOULDN'T HAPPEN!\n"; // NOT JOKING, THIS SHOULDN'T HAPPEN
+                    cout << "THIS SHOULDN'T HAPPEN!\n"; // THIS SHOULDN'T HAPPEN
                 }
 
                 auto ptr_new_range = findRange(range_new, level+1, &level_table);
@@ -384,7 +388,7 @@ void Network::updateWeights(set<LeafResult*, LeafCompare>* changed_leafs, unorde
             higher_branches.insert(level_table[1][range_old]);
         }
 
-        this->total_weight += (new_weight - old_weight);
+        this->total_weight += (new_weight - old_weight); // update total weight of the whole network
     }
 
     for (auto& e : *changed_leafs){
@@ -397,11 +401,11 @@ void Network::updateWeights(set<LeafResult*, LeafCompare>* changed_leafs, unorde
 void Network::addNewVertex(int name, int degree) {
     // create new vertex
     all_vertices.emplace_back(Vertex(name, generateFitness(), degree));
-    // container for the new leaf and the leafs of vertices that the new vertex connects to
+    // container for the new leaf and the leaves of vertices that the new vertex connects to
     set<LeafResult*, LeafCompare> changed_leafs{};
     unordered_set<WeightBranch*> changed_branches{};
 
-    // choose degree amount of vertices according to the attachment mechanism and add their leafs to the set of changed weights (leafs)
+    // choose degree amount of vertices according to the attachment mechanism and add their leaves to the set of changed weights (leafs)
     for (int i=0; i<degree; ++i){
         all_edges.emplace_back(Edge(chooseVertex(&changed_leafs), name));
     }

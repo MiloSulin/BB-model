@@ -69,8 +69,6 @@ bool LeafCompare::operator()(const LeafResult* leaf1, const LeafResult* leaf2) c
 }
 
 
-// auto leaf_cmp = [](const WeightLeaf* leaf1, const WeightLeaf* leaf2) {return (leaf1->weight < leaf2->weight);};
-
 WeightBranch::WeightBranch(int range_n) : is_level_one{false}, is_root{false}, staged_changes{false}, branch_name{range_n}, total_weight{0.0l}, old_weight{0.0l}, leafs{}, branches{} {};
 
 WeightBranch::~WeightBranch() {for (auto& e : leafs) {delete e;}};
@@ -212,15 +210,15 @@ void WeightBranch::insertElement(WeightBranch* new_branch) {
 LeafResult* WeightBranch::isLevelOne(){
     long double max_weight = std::pow(2, this->getName());
     auto children = getSize();
-    std::uniform_int_distribution<> area(0, children-1);
-    std::uniform_real_distribution<> weight(0.0, max_weight);
-    int index = area(gen);
+    // std::uniform_int_distribution<> area(0, children-1);
+    std::uniform_real_distribution<> weight(0.0, 1.0);
     long double variate = weight(gen);
+    int index = std::floor(variate * children);
     auto random_leaf = leafs[index];
     
-    while (variate >= (random_leaf)->weight){
+    while (variate*children - index >= (random_leaf)->weight / max_weight){
         variate = weight(gen);
-        index = area(gen);
+        index = std::floor(variate * children);
         random_leaf = leafs[index];
     }
     LeafResult* result = new LeafResult(random_leaf, index);
@@ -229,17 +227,16 @@ LeafResult* WeightBranch::isLevelOne(){
 
 LeafResult* WeightBranch::isNotLvlOne(){
     long double max_weight = std::pow(2, this->getName());
-    
     auto children = getSize();
-    std::uniform_int_distribution<> area(0, children-1);
-    std::uniform_real_distribution<> weight(0.0, max_weight);
-    int index = area(gen);
+    // std::uniform_int_distribution<> area(0, children-1);
+    std::uniform_real_distribution<> weight(0.0, 1.0);
     long double variate = weight(gen);
+    int index = std::floor(variate * children);
     auto random_branch = std::next(branches.begin(), index);
 
-    while(variate >= (*random_branch).second->getWeight() ){
+    while(variate*children - index >= (*random_branch).second->getWeight() / max_weight ){
         variate = weight(gen);
-        index = area(gen);
+        index = std::floor(variate * children);
         random_branch = std::next(branches.begin(), index);
     }
     return (*random_branch).second->recurRejection();

@@ -30,7 +30,7 @@ struct fitnessProb {
 };
 
 
-void generateBoseEinstein(energyRange, long double, vector<fitnessProb>*);
+// void generateBoseEinstein(energyRange, long double, vector<fitnessProb>*);
 
 long double chooseFitness(vector<fitnessProb>*);
 
@@ -52,6 +52,7 @@ struct LeafResult {
 };
 
 struct LeafCompare {
+    // custom comparison struct for the changed leaves that determines uniqueness by the leaf pointer and orders the results by descending index 
     bool operator()(const LeafResult*, const LeafResult*) const;
 };
 
@@ -71,6 +72,7 @@ class WeightBranch {
         int getSizeOld();
         void setChangesFalse();
 
+        // overloaded element insertion and extraction functions for both leaves and branches
         void insertElement(WeightLeaf*);
         void insertElement(WeightBranch*);
         void extractElement(const WeightLeaf*, int);
@@ -85,7 +87,7 @@ class WeightBranch {
         void setWeightOld();
         bool is_level_one;
         bool is_root;
-        bool staged_changes;
+        bool staged_changes; // when an element is extracted or inserted into a branch this value will be toggled and the current state of weight etc will be saved
 
         int branch_name; // integer value x that denotes the range [2^(x-1), 2^x) this branch represents
         // int old_weight_range; // integer value x that denotes the range [2^(x-1), 2^x) this branch belonged to before changes took place
