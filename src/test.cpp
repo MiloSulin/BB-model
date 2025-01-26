@@ -6,7 +6,7 @@
 #include <iostream>
 #include <chrono>
 #include <cmath>
-#include "Network.hpp"
+#include "../include/Network.hpp"
 
 using namespace std::chrono;
 using std::unordered_map, std::unordered_set, std::vector, std::array, std::cout;
@@ -30,7 +30,7 @@ int main() {
     for (int i=0; i<range; ++i){
         const auto start_t = high_resolution_clock::now();
 
-        Network test = Network("uniform", 2.0);
+        Network test = Network("BEC", 2.0);
         test.growNetwork(10000, 3);
         // cout << "Test\n";
 

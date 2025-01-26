@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Network.hpp"
+#include "../include/Network.hpp"
 
 #ifdef _WIN32
 #  define API __declspec(dllexport)

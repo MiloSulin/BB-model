@@ -3,7 +3,7 @@
 #include <string>
 #include <random>
 #include <exception>
-#include "Network.hpp"
+#include "../include/Network.hpp"
 
 using std::unordered_map, std::unordered_set, std::vector, std::array, std::cout, std::string;
 
@@ -132,6 +132,7 @@ Network::~Network() {
 }
 
 void Network::printVertices() {
+    // for debug purposes
     for(auto& v : all_vertices){
         cout << v << '\n';
     }
@@ -308,7 +309,7 @@ void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branche
                     weight_distribution[level]->roots -= std::pow(2, branch_name);
                     weight_distribution[level]->total_weight -= weight_old;
                 } else{
-                    cout << "THIS SHOULDN'T HAPPEN!\n"; // THIS SHOULDN'T HAPPEN
+                    std::cerr << "THIS SHOULDN'T HAPPEN!\n"; // THIS SHOULDN'T HAPPEN
                 }
 
                 auto ptr_new_range = findRange(range_new, level+1, &level_table);
@@ -335,7 +336,7 @@ void Network::updateLevel(int level, unordered_set<WeightBranch*>* lower_branche
                 }
             } // case of branch being empty again (size==0) shouldn't happen
         } else{
-            cout << "A case that was not accounted for during weight updates occurred! This is very bad!\n";
+            std::cerr << "A case that was not accounted for during weight updates occurred! This is very bad!\n";
         }
 
         // handle branch's root state
@@ -476,7 +477,7 @@ void Network::growNetworkPy(int v_amount, int e_amount, int* e_list1, int* e_lis
     }
 }
 
-// these print state info to console
+// these print state info to command line
 
 void Network::checkWeights() {
     cout << "Total weight of network: " << total_weight << '\n';

@@ -5,9 +5,9 @@
 #include <cmath>
 #include <random>
 #include <algorithm>
-#include "Generator.hpp"
+#include "../include/Generator.hpp"
 
-using std::unordered_map, std::unordered_set, std::vector, std::array;
+using std::unordered_map, std::unordered_set, std::vector;
 
 std::random_device rd;
 std::mt19937 gen(rd());

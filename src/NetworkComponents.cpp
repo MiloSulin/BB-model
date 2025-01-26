@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <thread>
-#include "NetworkComponents.hpp"
+#include "../include/NetworkComponents.hpp"
 
 using std::vector, std::array, std::cout;
 

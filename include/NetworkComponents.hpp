@@ -1,12 +1,14 @@
 #ifndef __NETWORKCOMPONENTS_H__
 #define __NETWORKCOMPONENTS_H__
-// basic components of a network, vertices and edges
+
 #include <iostream>
 #include <vector>
 #include <array>
 #include <thread>
 
 using std::vector, std::array, std::cout;
+
+// basic components of a network, vertices and edges
 
 class Vertex{
     public:
