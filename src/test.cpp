@@ -9,7 +9,7 @@
 #include "../include/Network.hpp"
 
 using namespace std::chrono;
-using std::unordered_map, std::unordered_set, std::vector, std::array, std::cout;
+using std::unordered_map, std::unordered_set, std::vector, std::cout;
 
 // struct TestStruct {
 //     TestStruct(int, int*);
@@ -26,12 +26,12 @@ using std::unordered_map, std::unordered_set, std::vector, std::array, std::cout
 
 int main() {
     duration<double, std::milli> total{};
-    int range{20};
+    int range{1};
     for (int i=0; i<range; ++i){
         const auto start_t = high_resolution_clock::now();
 
         Network test = Network("BEC", 2.0);
-        test.growNetwork(10000, 3);
+        test.growNetwork(1000000, 2);
         // cout << "Test\n";
 
         const auto end_t = high_resolution_clock::now();

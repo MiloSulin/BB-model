@@ -3,7 +3,7 @@
 #include <thread>
 #include "../include/NetworkComponents.hpp"
 
-using std::vector, std::array, std::cout;
+using std::vector, std::cout;
 
 Vertex::Vertex(int Name, long double Fit, int init_degree) : name{Name}, fitness{Fit}, degree{init_degree} {}; // assigns name, fitness and an initial degree to a vertex when it is created
 

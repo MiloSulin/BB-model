@@ -12,50 +12,7 @@ using std::unordered_map, std::unordered_set, std::vector;
 std::random_device rd;
 std::mt19937 gen(rd());
 
-energyRange::energyRange(int min, int max): minimum{min}, maximum{max} {};
 
-fitnessProb::fitnessProb(long double fit, long double w) : fitness{fit}, weight{w} {};
-fitnessProb::fitnessProb() : fitness{}, weight{} {};
-
-// THESE WERE DEPRECATED IN FAVOUR OF USING THE REJECTION METHOD, FOR NOW THAT FUNCTION IS FOUND IN NETWORK.CPP BUT IT SHOULD BE MOVED HERE IN THE FUTURE
-
-// void generateBoseEinstein(energyRange range, long double beta_constant, vector<fitnessProb>* fitness_distribution) {
-//     /* 
-//     Function that generates an energy distribution based on the "Bose-Einstein Condensation in Complex Networks" article
-//     -INPUT:
-//      range - minimum and maximum energy
-//      beta_constant - physical variable beta = 1/T, where T is temperature (unit K), remains constant during network generation
-//      fitness_distribution - vector pointer to the network's fitness distribution
-//      */
-//     int theta{1}; // the theta constant
-//     long double increment{(long double)(range.maximum - range.minimum) / 1000000};
-//     long double energy{range.minimum + increment};
-//     int max{range.maximum};
-
-//     for (int i=0; i<999999; ++i){
-//         long double weight = ((theta +1) * std::pow(energy, theta +1)) /std::pow(max, theta +1);
-//         long double fitness{std::exp( -(beta_constant * energy) )};
-//         (*fitness_distribution).emplace_back(fitnessProb(fitness, weight));
-//         energy += increment;
-//     }
-// }
-
-// long double chooseFitness(vector<fitnessProb>* distribution) {
-//     std::uniform_real_distribution<> area(0.0, 1.0);
-//     long double variate = area(gen);
-//     int size = distribution->size();
-//     int index = std::floor(variate*size);
-//     long double max_weight = (*(std::max_element(distribution->begin(), distribution->end(), [](const fitnessProb& prob1, const fitnessProb& prob2){ return (prob1.weight < prob2.weight);}))).weight;
-//     auto& random_fit = (*distribution)[index];
-//     // rejection method because linear searching was 99% of the process
-//     while (variate*size -index >= random_fit.weight / max_weight){
-//         variate = area(gen);
-//         index = std::floor(variate*size);
-//         random_fit = (*distribution)[index];
-//     }
-    
-//     return random_fit.fitness;
-// }
 
 WeightLeaf::WeightLeaf(int n, long double w) : name{n}, weight{w} {};
 
@@ -64,8 +21,8 @@ LeafResult::LeafResult() : chosen_leaf{nullptr}, leaf_index{} {};
 
 LeafResult::LeafResult(WeightLeaf* chosen_l, int leaf_i) : chosen_leaf{chosen_l}, leaf_index{leaf_i} {};
 
-bool LeafCompare::operator()(const LeafResult* leaf1, const LeafResult* leaf2) const {
-    return ( (leaf1->chosen_leaf != leaf2->chosen_leaf) && ( (leaf1->leaf_index > leaf2->leaf_index) ) );
+bool LeafCompare::operator()(const LeafResult& leaf1, const LeafResult& leaf2) const {
+    return ( (leaf1.chosen_leaf != leaf2.chosen_leaf) && ( (leaf1.leaf_index > leaf2.leaf_index) ) );
 }
 
 
@@ -131,6 +88,10 @@ void WeightBranch::setChangesFalse() {
     staged_changes = false;
 }
 
+bool WeightBranch::checkChanges() {
+    return staged_changes;
+}
+
 void WeightBranch::extractElement(const WeightLeaf* leaf_to_rm, int index) {
     if(!is_level_one){
         std::cerr << "Invalid argument for non-level-one branch!\n"; // this should never happen, but just in case
@@ -182,7 +143,6 @@ void WeightBranch::insertElement(WeightLeaf* new_leaf) {
     } else{
         if (!staged_changes){
             setSizeOld();
-            // setRangeOld();
             setWeightOld();
             staged_changes = true;
         }
@@ -197,7 +157,6 @@ void WeightBranch::insertElement(WeightBranch* new_branch) {
     } else{
         if (!staged_changes){
             setSizeOld();
-            // setRangeOld();
             setWeightOld();
             staged_changes = true;
         }
@@ -207,10 +166,9 @@ void WeightBranch::insertElement(WeightBranch* new_branch) {
 }
 
 
-LeafResult* WeightBranch::isLevelOne(){
+LeafResult WeightBranch::isLevelOne(){
     long double max_weight = std::pow(2, this->getName());
     auto children = getSize();
-    // std::uniform_int_distribution<> area(0, children-1);
     std::uniform_real_distribution<> weight(0.0, 1.0);
     long double variate = weight(gen);
     int index = std::floor(variate * children);
@@ -221,14 +179,13 @@ LeafResult* WeightBranch::isLevelOne(){
         index = std::floor(variate * children);
         random_leaf = leafs[index];
     }
-    LeafResult* result = new LeafResult(random_leaf, index);
+    LeafResult result = LeafResult(random_leaf, index);
     return result;
 }
 
-LeafResult* WeightBranch::isNotLvlOne(){
+LeafResult WeightBranch::isNotLvlOne(){
     long double max_weight = std::pow(2, this->getName());
     auto children = getSize();
-    // std::uniform_int_distribution<> area(0, children-1);
     std::uniform_real_distribution<> weight(0.0, 1.0);
     long double variate = weight(gen);
     int index = std::floor(variate * children);
@@ -242,7 +199,7 @@ LeafResult* WeightBranch::isNotLvlOne(){
     return (*random_branch).second->recurRejection();
 }
 
-LeafResult* WeightBranch::recurRejection() {
+LeafResult WeightBranch::recurRejection() {
     if (is_level_one) {
         return isLevelOne();
     } else{

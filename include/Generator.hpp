@@ -3,36 +3,17 @@
 
 #include <unordered_map>
 #include <unordered_set>
-#include <list>
 #include <vector>
-#include <array>
 #include <cmath>
 #include <random>
 
-using std::unordered_map, std::unordered_set, std::vector, std::array, std::list;
+using std::unordered_map, std::unordered_set, std::vector;
 
 extern std::random_device rd;
 extern std::mt19937 gen;
 
-struct energyRange {
-    energyRange(int, int);
-    // minimum and maximum (excluded) bounds of the energy as two integers 
-    int minimum;
-    int maximum;
-};
-
-struct fitnessProb {
-    fitnessProb();
-    fitnessProb(long double, long double);
-    // contains the weight for the specified fitness value
-    long double fitness;
-    long double weight;
-};
-
 
 // void generateBoseEinstein(energyRange, long double, vector<fitnessProb>*);
-
-long double chooseFitness(vector<fitnessProb>*);
 
 
 // objects required for constructing the full vertex distribution according to the alogrithm presented in "Dynamic Generation of Discrete Random Variates" by Matias et al.
@@ -53,7 +34,7 @@ struct LeafResult {
 
 struct LeafCompare {
     // custom comparison struct for the changed leaves that determines uniqueness by the leaf pointer and orders the results by descending index 
-    bool operator()(const LeafResult*, const LeafResult*) const;
+    bool operator()(const LeafResult&, const LeafResult&) const;
 };
 
 class WeightBranch {
@@ -71,6 +52,7 @@ class WeightBranch {
         long double getWeightOld();
         int getSizeOld();
         void setChangesFalse();
+        bool checkChanges();
 
         // overloaded element insertion and extraction functions for both leaves and branches
         void insertElement(WeightLeaf*);
@@ -78,12 +60,12 @@ class WeightBranch {
         void extractElement(const WeightLeaf*, int);
         void extractElement(int);
 
-        LeafResult* recurRejection();
+        LeafResult recurRejection();
     private:
         // void setRangeOld();
         void setSizeOld();
-        LeafResult* isLevelOne();
-        LeafResult* isNotLvlOne();
+        LeafResult isLevelOne();
+        LeafResult isNotLvlOne();
         void setWeightOld();
         bool is_level_one;
         bool is_root;

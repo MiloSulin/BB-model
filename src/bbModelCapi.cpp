@@ -13,9 +13,8 @@ extern "C" API void generateBianconiBarabasiPy(int32_t v_amount, int32_t e_amoun
     if (vertices_to_generate < 0){
         throw std::invalid_argument("Network size smaller than minimum network generated at initialisation! Please input a total network size >= 10!\n");
     }
-    auto bb_network_for_py = new Network(type_str, beta_constant, edge_list1, edge_list2, vertex_fit_list, true);
-    bb_network_for_py->growNetworkPy(vertices_to_generate, e_amount, edge_list1, edge_list2, vertex_fit_list);
-    delete bb_network_for_py;
+    auto bb_network_for_py =  Network(type_str, beta_constant, edge_list1, edge_list2, vertex_fit_list, true);
+    bb_network_for_py.growNetworkPy(v_amount, e_amount, edge_list1, edge_list2, vertex_fit_list);
 }
 
 // these existed for testing purposes

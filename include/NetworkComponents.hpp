@@ -3,10 +3,9 @@
 
 #include <iostream>
 #include <vector>
-#include <array>
 #include <thread>
 
-using std::vector, std::array, std::cout;
+using std::vector, std::cout;
 
 // basic components of a network, vertices and edges
 
