@@ -1,15 +1,11 @@
 // bianconi barabasi model
-#include <unordered_map>
-#include <unordered_set>
-#include <set>
 #include <vector>
 #include <iostream>
 #include <chrono>
-#include <cmath>
 #include "../include/Network.hpp"
 
 using namespace std::chrono;
-using std::unordered_map, std::unordered_set, std::vector, std::cout;
+using std::cout;
 
 // struct TestStruct {
 //     TestStruct(int, int*);
@@ -26,12 +22,12 @@ using std::unordered_map, std::unordered_set, std::vector, std::cout;
 
 int main() {
     duration<double, std::milli> total{};
-    int range{1};
+    int range{20};
     for (int i=0; i<range; ++i){
         const auto start_t = high_resolution_clock::now();
 
         Network test = Network("BEC", 2.0);
-        test.growNetwork(1000000, 2);
+        test.growNetwork(10000, 3);
         // cout << "Test\n";
 
         const auto end_t = high_resolution_clock::now();

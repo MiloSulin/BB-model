@@ -8,7 +8,7 @@
 using std::unordered_map, std::unordered_set, std::vector, std::cout, std::string;
 
 
-Network::Network(string type, double_t beta, int* e_list1, int* e_list2, double_t* fit_list, bool for_py) : for_python{for_py}, uniform_distr{true}, total_weight{}, beta_constant{beta}, weight_distribution{}, level_table{} {
+Network::Network(string type, double_t beta, int* e_list1, int* e_list2, double_t* fit_list, bool for_py) : uniform_distr{true}, total_weight{}, beta_constant{beta}, weight_distribution{}, level_table{} {
     if (for_py == false){
         all_vertices.reserve(10);
         all_edges.reserve(10);
@@ -210,7 +210,8 @@ int Network::chooseVertex(set<LeafResult, LeafCompare> &changed_leafs) {
 }
 
 void Network::updateLevel(int level, vector<WeightBranch*> &lower_branches) {
-    // TO DO: CLEAN THIS MESS UP, NEEDS TO BE SPLIT INTO SMALLER FUNCTIONS FOR MORE READABLE CODE
+    // TODO: CLEAN THIS MESS UP, NEEDS TO BE SPLIT INTO SMALLER FUNCTIONS FOR MORE READABLE CODE
+
     vector<WeightBranch*> higher_branches{};
     higher_branches.reserve(lower_branches.size() * 2);
     long double table_weight_delta{0.0};

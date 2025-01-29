@@ -35,12 +35,11 @@ class Network {
         void updateWeights(set<LeafResult, LeafCompare>&, vector<WeightBranch*>&);
 
         // vector<fitnessProb> fitness_distribution;
-        bool for_python;
         bool uniform_distr;
         long double total_weight; // sum of the weights of all vertices in the network
         long double beta_constant;
 
-        map<int, WeightTable*> weight_distribution; // vector of WeightTable objects which include pointers to root branches
+        map<int, WeightTable*> weight_distribution; // map of WeightTable objects which include pointers to root branches
         unordered_map<int, unordered_map<int, WeightBranch*>> level_table; // separates weight ranges of vertices by level, root or not
 
         vector<Vertex> all_vertices; // vector container for vertices, oldest ones are at the beginning of the vector
