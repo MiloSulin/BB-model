@@ -210,7 +210,6 @@ int Network::chooseVertex(set<LeafResult, LeafCompare> &changed_leafs) {
 }
 
 void Network::updateLevel(int level, vector<WeightBranch*> &lower_branches) {
-    // TODO: CLEAN THIS MESS UP, NEEDS TO BE SPLIT INTO SMALLER FUNCTIONS FOR MORE READABLE CODE
 
     vector<WeightBranch*> higher_branches{};
     higher_branches.reserve(lower_branches.size() * 2);
@@ -236,7 +235,7 @@ void Network::updateLevel(int level, vector<WeightBranch*> &lower_branches) {
         int branch_size = branch->getSize();
 
         if (size_old != 0 && !branch->checkRoot()){ // those branches which had a weight above 0 before changes took place and were not roots will have a parent
-            if(!level_table[level+1].contains(range_old)){ // print information about state to console if an impossible state is reached
+            if(!level_table[level+1].contains(range_old)){ // print information about state to command line if an impossible state is reached
                 this->checkWeights();
                 this->checkLevels();
                 cout << '\n';
@@ -250,7 +249,7 @@ void Network::updateLevel(int level, vector<WeightBranch*> &lower_branches) {
             }
             auto ptr_old_branch = level_table[level+1][range_old]; // get pointer to parent branch
 
-            if (range_old != range_new && branch_size > 1){ // if range has changed we will have to remove the branch to a new parent
+            if (range_old != range_new && branch_size > 1){ // if range has changed we will have to move the branch to a new parent
                 ptr_old_branch->extractElement(branch_name);
 
                 auto ptr_new_branch = findRange(range_new, level+1, &level_table);

@@ -72,7 +72,7 @@ class WeightBranch {
         bool staged_changes; // when an element is extracted or inserted into a branch this value will be toggled and the current state of weight etc will be saved
 
         int branch_name; // integer value x that denotes the range [2^(x-1), 2^x) this branch represents
-        // int old_weight_range; // integer value x that denotes the range [2^(x-1), 2^x) this branch belonged to before changes took place
+        /*int old_weight_range; // integer value x that denotes the range [2^(x-1), 2^x) this branch belonged to before changes took place*/
         long double total_weight; // total weight of this branch
         long double old_weight;
         int old_size;
